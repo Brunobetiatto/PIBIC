@@ -4,7 +4,7 @@
 
 Para quem quiser se aprofundar, disponibilizamos o **Relatório Final** completo em PDF:
 
-➡️ [Download do Relatório Final (PDF)](docs/Modelo_Relatorio_Final.pdf)
+➡️ [Download do Relatório Final (PDF)](docs/Modelo-Relatorio_Final.pdf)
 
 ---
 
