@@ -1,2 +1,18 @@
-# PIBIC - CNN na classificação ultrassonografica em cães e gatos
-este repositorio é destinado ao projeto, iniciado em agosto de 2024 e terminado em julho de 2025, sobre inteligência artificial, com foco em CNN e data vision para a classificação de imagens de rins. 
+# Projeto PIBIC – Implementação de IA no Diagnóstico Ultrassonográfico em Cães
+
+## 📄 Relatório Final do PIBIC
+
+Para quem quiser se aprofundar, disponibilizamos o **Relatório Final** completo em PDF:
+
+➡️ [Download do Relatório Final (PDF)](docs/Relatorio_Final_PIBIC.pdf)
+
+---
+
+<!-- Nas próximas seções você verá: 
+- Descrição do projeto  
+- Estrutura do repositório  
+- Como rodar os notebooks e scripts  
+- Principais resultados e gráficos  
+- Tecnologias utilizadas  
+- Contato e referências  
+-->
