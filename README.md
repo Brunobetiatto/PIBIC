@@ -4,7 +4,7 @@
 
 Para quem quiser se aprofundar, disponibilizamos o **Relatório Final** completo em PDF:
 
-➡️ [Download do Relatório Final (PDF)](docs/Relatorio_Final_PIBIC.pdf)
+➡️ [Download do Relatório Final (PDF)](docs/Modelo_Relatorio_Final_PIBIC.pdf)
 
 ---
 
