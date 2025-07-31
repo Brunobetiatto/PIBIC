@@ -1,0 +1,5 @@
+Conjunto,Total Imagens,Normal,Alterado,Convexo,Linear,Felino,Canino,Felino Convexo,Felino Linear,Canino Convexo,Canino Linear
+train,800,400,400,519,0,122,397,122,0,397,0
+valid,200,100,100,143,0,39,104,39,0,104,0
+test,113,60,53,113,0,31,82,31,0,82,0
+TOTAL,1113,560,553,775,0,192,583,192,0,583,0
