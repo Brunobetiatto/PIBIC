@@ -120,63 +120,216 @@ Este script automatiza o treinamento do modelo YOLOv11-nano em múltiplos folds 
      --model yolov11n
 ---
 
-## ✨ Script de Aumento de Dados Customizado (arquivo: albumentation_1.py)
-Este script gera novas amostras de imagem e labels para treino e validação, aplicando transformações seguras (sem crop que deforme) e mantendo a consistência dos bounding boxes.
+## ✨ Script de Aumento de Dados Customizado (albumentation_1.py)
 
-📋 O que ele faz
-Define a seed para reprodutibilidade (função set_seed).
+Este script gera novas amostras de imagem e arquivos de label para treino e validação, aplicando transformações seguras (sem deformar via crop) e mantendo a consistência dos bounding boxes.
 
-Recorta cada imagem ao redor do maior componente (linha de interesse) e ajusta as coordenadas originais de caixa.
+---
 
-Aplica transformações opcionais:
-• Brilho aleatório
-• Flip horizontal
-• Rotação suave até ±30°
+### 📋 O que ele faz
 
-Gera N cópias por classe até atingir o target definido para treino e validação.
+- Define a seed para reprodutibilidade (função `set_seed`).
+- Recorta cada imagem ao redor do maior componente (linha de interesse) e ajusta as coordenadas originais de caixa.
+- Aplica transformações opcionais:
+  - brilho aleatório  
+  - flip horizontal  
+  - rotação suave (± 30°)
+- Gera cópias por classe até atingir a quantidade desejada para treino e validação.
+- Copia todo o conjunto de teste sem alterações.
+- Replica o arquivo `data.yaml` no novo fold.
 
-Copia o conjunto de teste sem alterações.
+---
 
-Mantém a mesma estrutura de pastas e replica o data.yaml.
+### 🔑 Principais funções
 
-🔑 Principais funções
-  - set_seed(seed) – ajusta as sementes de random e numpy para resultados reproduzíveis.
-  - crop_and_find_component(imagem, threshold=5) – converte para escala de cinza, aplica threshold, encontra o maior contorno e retorna a caixa delimitadora e a imagem recortada.
-  - adjust_coordinates(pares_de_coords, tamanho_original, bbox) – transforma coordenadas normalizadas da imagem original para a região recortada.
-  - apply_random_brightness(imagem) – ajusta o brilho via HSV (com probabilidade interna).
-  - apply_random_flip(imagem, pares_de_coords) – inverte horizontalmente e atualiza as coordenadas X.
-  - rotate_image(imagem, pares_de_coords) – rotaciona suavemente e recalcula as coordenadas, descartando rotações que saiam do frame.
-  - process_directory(…) – lê imagens e labels das pastas train e valid, calcula quantas cópias gerar por imagem e salva as imagens aumentadas e novos arquivos de label.
-  - copy_test_images(…) – replica as pastas test/images e test/labels sem modificações.
-  - main() – lê argumentos via argparse, cria uma nova pasta fold_X em output_dir, chama process_directory e copy_test_images e copia o data.yaml para o novo fold.
+- `set_seed(seed)`: define sementes de `random` e `numpy`.  
+- `crop_and_find_component(imagem, threshold=5)`: converte para escala de cinza, aplica threshold e encontra o maior contorno, retornando imagem recortada e bbox.  
+- `adjust_coordinates(pares_de_coords, tamanho_original, bbox)`: ajusta coordenadas normalizadas da imagem original para a região recortada.  
+- `apply_random_brightness(imagem)`: altera brilho via HSV (controlável por probabilidade interna).  
+- `apply_random_flip(imagem, pares_de_coords)`: faz flip horizontal e atualiza as coordenadas X.  
+- `rotate_image(imagem, pares_de_coords)`: aplica rotação suave e recalcula coordenadas, descartando transformações que saiam do frame.  
+- `process_directory(...)`: lê imagens e labels de `train/` e `valid/`, calcula quantas cópias gerar, salva imagens aumentadas e novos labels.  
+- `copy_test_images(...)`: replica pastas `test/images` e `test/labels` sem modificações.  
+- `main()`: lê argumentos, cria um novo `fold_X` em `output_dir`, executa `process_directory` e `copy_test_images`, e copia o `data.yaml`.
 
-⚙️ Parâmetros de entrada
+---
+
+### ⚙️ Parâmetros de entrada
+
 | Argumento                   | Tipo | Descrição                                                        |
 | --------------------------- | ---- | ---------------------------------------------------------------- |
-| input\_fold                 | str  | Pasta do fold original com subpastas train, valid e test         |
-| output\_dir                 | str  | Pasta onde o novo fold será criado (ex: augmented\_folds/)       |
-| --target\_per\_class\_train | int  | Quantidade de imagens desejada por classe em train (padrão: 500) |
-| --target\_per\_class\_valid | int  | Quantidade de imagens desejada por classe em valid (padrão: 100) |
-| --seed                      | int  | Semente para reprodutibilidade (opcional)                        |
+| `input_fold`                | str  | Pasta do fold original contendo subpastas `train`, `valid` e `test` |
+| `output_dir`                | str  | Pasta onde o novo fold será criado (ex: `augmented_folds/`)      |
+| `--target_per_class_train`  | int  | Quantidade de imagens por classe em `train` (padrão: 500)        |
+| `--target_per_class_valid`  | int  | Quantidade de imagens por classe em `valid` (padrão: 100)        |
+| `--seed`                    | int  | Semente para reprodutibilidade (opcional)                        |
+
+---
+
+### 🚀 Como usar
+
+1. Preparar as pastas de entrada:  
+   - O fold original deve conter:  
+     - `train/images`  
+     - `train/labels`  
+     - `valid/images`  
+     - `valid/labels`  
+     - `test/images`  
+     - `test/labels`  
+     - `data.yaml`
+
+2. Executar o comando no terminal:  
+   ```bash
+   python albumentation_1.py \
+     <caminho/para/fold_original> \
+     <caminho/para/folds_aumentados> \
+     --target_per_class_train 500 \
+     --target_per_class_valid 100 \
+     --seed 42
+---
+
+## 🧪 Script de Avaliação e Visualização de Resultados (`evaluate_and_plot.py`)
+
+Este script carrega pesos treinados do YOLO, avalia o modelo em imagens de teste por fold, gera métricas clássicas de classificação e detecção, plota matrizes de confusão e gráficos de acurácia por categoria, e salva figuras e relatórios em pastas separadas.
+
+---
+
+### 📋 O que ele faz
+
+- Carrega catálogo Excel para mapear cada imagem a  
+  - espécie (`felino` ou `canino`)  
+  - tipo de transdutor (`convexo` ou `linear`)  
+- Para cada fold (1 a 5):  
+  1. Cria pasta `resultado_fold_<n>`  
+  2. Avalia o modelo com `model.val(...)` do ultralytics YOLO  
+  3. Itera sobre as imagens de teste, realizando:  
+     - Normalização do ID da imagem (`normalize_image_id`)  
+     - Inferência YOLO para obter bbox e classe com maior confiança  
+     - Comparação com label real (se existir) para atualizar contadores  
+     - Desenho da imagem com bbox, legenda de classe real e prevista  
+     - Salvamento de figura em `resultado_fold_<n>/result_<i>.jpg`  
+  4. Calcula métricas de classificação (acurácia, precisão, recall, F1)  
+  5. Plota e salva:  
+     - Matriz de confusão de classes normal/abnormal (`confusion_matrix_classes.png`)  
+     - Barras de acurácia por espécie (`species_accuracy.png`)  
+     - Barras de acurácia por transdutor (`transducer_accuracy.png`)  
+  6. Gera `metrics.txt` com:  
+     - mAP50 e mAP50-95 do YOLO  
+     - Métricas de classificação  
+     - Estatísticas de acerto por espécie e transdutor  
+
+---
+
+### 🔑 Principais funções
+
+- `load_spreadsheet_data(excel_path)`  
+  Lê planilhas GE e Samsung, cria dicionários `image_to_species` e `image_to_transducer`.
+
+- `normalize_image_id(image_name)`  
+  Remove sufixos e normaliza o ID para lookup no catálogo.
+
+- `create_incremented_folder(base_path, fold)`  
+  Cria `resultado_fold_<fold>` sem sobrescrever se já existir.
+
+- `plot_confusion_matrix(cm, classes, title, filename, normalize=False)`  
+  Gera e salva mapa de calor de matriz de confusão.
+
+- `plot_category_accuracy(metrics, category_type, output_folder)`  
+  Plota barras de total x acertos para `species` ou `transducer`.
+
+- Loop principal em `__main__`:  
+  - Analisa argumentos `--folds_dir`, `--weights_dir`, `--output_dir`  
+  - Para cada fold: avaliação, plotagens, salvamento de imagens e métricas.
+
+---
+
+### ⚙️ Parâmetros de entrada
+
+| Argumento     | Tipo | Descrição                                                      |
+| ------------- | ---- | -------------------------------------------------------------- |
+| `--folds_dir`     | str  | Pasta com subpastas `fold_<n>/test/images`, `test/labels` e `data.yaml` |
+| `--weights_dir`   | str  | Pasta com `fold_<n>/weights/best.pt` para cada fold           |
+| `--output_dir`    | str  | Pasta onde serão criados `resultado_fold_<n>/`                |
+
+---
+
+### 🚀 Como usar
+
+1. Certifique-se de ter os arquivos:  
+   - `<folds_dir>/fold_<n>/test/images` e `.../test/labels`  
+   - `<folds_dir>/fold_<n>/data.yaml`  
+   - `<weights_dir>/fold_<n>/weights/best.pt`  
+
+2. Execute no terminal:  
+   ```bash
+   python evaluate_and_plot.py \
+     --folds_dir caminho/para/folds \
+     --weights_dir caminho/para/weights \
+     --output_dir caminho/para/resultados
+
+## 🗂️ Script de Criação de Folds com Crop (create_folds.py)
+
+Este script divide o dataset original em N folds estratificados por grupo, aplica crop automático em cada imagem e ajusta as coordenadas dos bounding boxes.
+
+---
+
+### 📋 O que ele faz
+
+- Carrega o arquivo `data.yaml` para obter configurações gerais.  
+- Varre as pastas `train`, `valid` e `test`, coletando pares imagem–label.  
+- Agrupa imagens por chave extraída via regex (função `extract_group_key`) para manter série correlacionadas juntas.  
+- Embaralha aleatoriamente os grupos e os divide em `num_folds` partes quase iguais.  
+- Para cada fold i (1…N):  
+  - Define quais grupos vão para treino (3 folds), validação (1 fold) e teste (1 fold).  
+  - Cria pasta `folds/fold_i/{train,valid,test}/{images,labels}`.  
+  - Em cada par imagem–label, aplica:  
+    - `crop_and_find_component()` para recortar ao redor do maior componente  
+    - `adjust_coordinates()` para recalcular as coordenadas normalizadas no crop  
+    - Salva a imagem recortada e o novo arquivo de label no respectivo split.  
+  - Copia o `data.yaml` original para `fold_i/`.  
+- Ao final, imprime resumo de quantas imagens em cada split e confirma criação de todos os folds.
+
+---
+
+### 🔑 Principais funções
+
+- `load_yaml(yaml_path)` — lê `data.yaml` e retorna dicionário.  
+- `get_image_label_pairs(split_dir)` — retorna lista de tuplas (imagem, label) para um split.  
+- `extract_group_key(filename)` — limpa sufixos e retorna chave de agrupamento para manter séries juntas.  
+- `crop_and_find_component(image, threshold=5)` — do módulo de augment, encontra maior contorno e recorta.  
+- `adjust_coordinates(coords_pairs, orig_size, bbox)` — recalcula coordenadas após o crop.  
+- `create_folds(base_dir, num_folds, seed)` — coordena todo o processo de agrupamento, divisão e salvamento.  
+
+---
+
+### ⚙️ Parâmetros de entrada
+
+| Parâmetro    | Tipo | Descrição                                                      |
+| ------------ | ---- | -------------------------------------------------------------- |
+| base_dir     | str  | Pasta raiz do dataset contendo `train/`, `valid/`, `test/` e `data.yaml` |
+| num_folds    | int  | Quantidade de folds a gerar (padrão 5)                         |
+| seed         | int  | Semente para embaralhamento e reprodutibilidade (padrão 42)    |
+
+---
+
+### 🚀 Como usar
+
+1. Ajuste o caminho `base_dataset_path` no bloco `if __name__ == '__main__'` ou altere para usar `argparse`.  
+2. Execute no terminal:
+- python create_folds.py
+- ou, se tiver `argparse` integrado:
+
+  3. Após execução, será criada a pasta `folds/` com:
+- `fold_1` … `fold_5`  
+- Em cada `fold_i`:  
+  - `train/images`, `train/labels`  
+  - `valid/images`, `valid/labels`  
+  - `test/images`,  `test/labels`  
+  - cópia de `data.yaml`  
+
+---
+
+💡 **Dica**  
+Altere `threshold` em `crop_and_find_component` para ajustar a sensibilidade de recorte, e experimente mudar `num_folds` conforme necessidade de validação cruzada.  
 
 
-#🚀 Como utilizar
-Preparar as pastas de entrada:
-• fold original deve conter subpastas train/images, train/labels, valid/images, valid/labels, test/images, test/labels e um arquivo data.yaml.
-
-#Executar o comando:
-python albumentation_1.py <caminho_para_fold_original> <caminho_para_folds_aumentados> --target_per_class_train 500 --target_per_class_valid 100 --seed 42
-
-O script criará uma pasta fold_1 (ou próxima disponível) em <caminho_para_folds_aumentados> com a mesma estrutura, contendo imagens originais e aumentadas, labels ajustadas e o data.yaml copiado.
-
-#💡 Dica rápida
-Ajuste o threshold em crop_and_find_component para recortes mais finos, ou altere as probabilidades internas (valores em if random.random() < ...) para controlar com que frequência cada transformação ocorre.
-
-<!-- Nas próximas seções você verá: 
-- Descrição do projeto  
-- Estrutura do repositório  
-- Como rodar os notebooks e scripts  
-- Principais resultados e gráficos  
-- Tecnologias utilizadas  
-- Contato e referências  
--->
