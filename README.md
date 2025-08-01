@@ -110,7 +110,7 @@ Este script automatiza o treinamento do modelo YOLOv11-nano em múltiplos folds 
      val:   ../images/val
      nc: 2
      names: ['normal','alterado']
-     ```
+  
 2. **Executar o treinamento**  
       bash
    python train_yolo.py \
@@ -118,7 +118,59 @@ Este script automatiza o treinamento do modelo YOLOv11-nano em múltiplos folds 
      /caminho/para/resultados/ \
      --seed 123 \
      --model yolov11n
+---
 
+## ✨ Script de Aumento de Dados Customizado (arquivo: albumentation_1.py)
+Este script gera novas amostras de imagem e labels para treino e validação, aplicando transformações seguras (sem crop que deforme) e mantendo a consistência dos bounding boxes.
+
+📋 O que ele faz
+Define a seed para reprodutibilidade (função set_seed).
+
+Recorta cada imagem ao redor do maior componente (linha de interesse) e ajusta as coordenadas originais de caixa.
+
+Aplica transformações opcionais:
+• Brilho aleatório
+• Flip horizontal
+• Rotação suave até ±30°
+
+Gera N cópias por classe até atingir o target definido para treino e validação.
+
+Copia o conjunto de teste sem alterações.
+
+Mantém a mesma estrutura de pastas e replica o data.yaml.
+
+🔑 Principais funções
+  - set_seed(seed) – ajusta as sementes de random e numpy para resultados reproduzíveis.
+  - crop_and_find_component(imagem, threshold=5) – converte para escala de cinza, aplica threshold, encontra o maior contorno e retorna a caixa delimitadora e a imagem recortada.
+  - adjust_coordinates(pares_de_coords, tamanho_original, bbox) – transforma coordenadas normalizadas da imagem original para a região recortada.
+  - apply_random_brightness(imagem) – ajusta o brilho via HSV (com probabilidade interna).
+  - apply_random_flip(imagem, pares_de_coords) – inverte horizontalmente e atualiza as coordenadas X.
+  - rotate_image(imagem, pares_de_coords) – rotaciona suavemente e recalcula as coordenadas, descartando rotações que saiam do frame.
+  - process_directory(…) – lê imagens e labels das pastas train e valid, calcula quantas cópias gerar por imagem e salva as imagens aumentadas e novos arquivos de label.
+  - copy_test_images(…) – replica as pastas test/images e test/labels sem modificações.
+  - main() – lê argumentos via argparse, cria uma nova pasta fold_X em output_dir, chama process_directory e copy_test_images e copia o data.yaml para o novo fold.
+
+⚙️ Parâmetros de entrada
+| Argumento                   | Tipo | Descrição                                                        |
+| --------------------------- | ---- | ---------------------------------------------------------------- |
+| input\_fold                 | str  | Pasta do fold original com subpastas train, valid e test         |
+| output\_dir                 | str  | Pasta onde o novo fold será criado (ex: augmented\_folds/)       |
+| --target\_per\_class\_train | int  | Quantidade de imagens desejada por classe em train (padrão: 500) |
+| --target\_per\_class\_valid | int  | Quantidade de imagens desejada por classe em valid (padrão: 100) |
+| --seed                      | int  | Semente para reprodutibilidade (opcional)                        |
+
+
+#🚀 Como utilizar
+Preparar as pastas de entrada:
+• fold original deve conter subpastas train/images, train/labels, valid/images, valid/labels, test/images, test/labels e um arquivo data.yaml.
+
+#Executar o comando:
+python albumentation_1.py <caminho_para_fold_original> <caminho_para_folds_aumentados> --target_per_class_train 500 --target_per_class_valid 100 --seed 42
+
+O script criará uma pasta fold_1 (ou próxima disponível) em <caminho_para_folds_aumentados> com a mesma estrutura, contendo imagens originais e aumentadas, labels ajustadas e o data.yaml copiado.
+
+#💡 Dica rápida
+Ajuste o threshold em crop_and_find_component para recortes mais finos, ou altere as probabilidades internas (valores em if random.random() < ...) para controlar com que frequência cada transformação ocorre.
 
 <!-- Nas próximas seções você verá: 
 - Descrição do projeto  
