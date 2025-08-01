@@ -188,7 +188,7 @@ Este script gera novas amostras de imagem e arquivos de label para treino e vali
      --seed 42
 ---
 
-## 🧪 Script de Avaliação e Visualização de Resultados (`evaluate_and_plot.py`)
+## 🧪 Script de Avaliação e Visualização de Resultados (`teste_pasta.py`)
 
 Este script carrega pesos treinados do YOLO, avalia o modelo em imagens de teste por fold, gera métricas clássicas de classificação e detecção, plota matrizes de confusão e gráficos de acurácia por categoria, e salva figuras e relatórios em pastas separadas.
 
@@ -267,7 +267,7 @@ Este script carrega pesos treinados do YOLO, avalia o modelo em imagens de teste
      --weights_dir caminho/para/weights \
      --output_dir caminho/para/resultados
 
-## 🗂️ Script de Criação de Folds com Crop (create_folds.py)
+## 🗂️ Script de Criação de Folds com Crop (kfolds.py)
 
 Este script divide o dataset original em N folds estratificados por grupo, aplica crop automático em cada imagem e ajusta as coordenadas dos bounding boxes.
 
