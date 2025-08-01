@@ -2,7 +2,7 @@
 
 ## 📄 Relatório Final do PIBIC
 
-Para quem quiser se aprofundar, disponibilizamos o **Relatório Final** completo em PDF:
+Para quem quiser se aprofundar e visualizar os resultados, disponibilizamos o **Relatório Final** completo em PDF:
 
 ➡️ [Relatório Final (PDF)](docs/Modelo-Relatorio_Final.pdf)
 
